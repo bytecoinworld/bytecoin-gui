@@ -7,7 +7,7 @@ release is **3.6.0**.
 ![Wallet image 3.6.0](https://bytecoin.world/assets/images/wallets/wallet-3.6.0.png)
 
 <p align="center">
-  <a href="https://github.com/bytecoinworld/bytecoin-gui/releases/tag/3.6.0">
+  <a href="https://github.com/bytecoinworld/bytecoin-gui/releases/tag/v3.6.0">
     <font size="22">Download Bytecoin Wallet</font>
   </a>
 </p>
