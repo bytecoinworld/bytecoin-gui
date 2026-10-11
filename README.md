@@ -11,6 +11,7 @@ release is **3.6.0**.
     <font size="22">Download Bytecoin Wallet</font>
   </a>
 </p>
+
 ## How to build binaries from source code
 
 The CMake build fetches the pinned ZXing-C++ 1.4.0 source to provide local QR
