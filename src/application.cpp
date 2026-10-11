@@ -49,7 +49,7 @@ WalletApplication::WalletApplication(int& argc, char** argv)
     , m_isAboutToQuit(false)
 {
     setApplicationName("bytecoin"); // do not change because it also changes data directory under Mac and Win
-    setApplicationDisplayName(tr("Bytecoin Wallet — bytecoin.world Community Edition") + ' ' + Settings::getFullVersion());
+    setApplicationDisplayName(tr("Bytecoin Wallet — bytecoin.world Community Edition") + ' ' + Settings::getVersion());
     setApplicationVersion(VERSION);
     setQuitOnLastWindowClosed(false);
     QLocale::setDefault(QLocale::c());

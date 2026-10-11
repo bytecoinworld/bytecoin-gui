@@ -936,7 +936,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;About Bytecoin</string>
+    <string>&amp;About Bytecoin Wallet</string>
    </property>
   </action>
   <action name="m_aboutQtAction">
