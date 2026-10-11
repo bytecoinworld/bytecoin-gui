@@ -6,6 +6,11 @@ release is **3.6.0**.
 
 ![3.6.0](https://github.com/user-attachments/assets/480bf4de-a74e-4943-8a51-9a87847a23ca)
 
+<p align="center">
+  <a href="https://github.com/bytecoinworld/bytecoin-gui/releases/tag/v3.6.0">
+    <font size="22">Download Bytecoin Wallet</font>
+  </a>
+</p>
 ## How to build binaries from source code
 
 The CMake build fetches the pinned ZXing-C++ 1.4.0 source to provide local QR
