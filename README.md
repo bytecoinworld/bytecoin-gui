@@ -4,7 +4,7 @@ This community-maintained edition builds on the upstream Bytecoin Wallet and is
 released independently by the bytecoin.world community. The current stable
 release is **3.6.0**.
 
-![3.6.0](https://private-user-images.githubusercontent.com/183026333/670681441-480bf4de-a74e-4943-8a51-9a87847a23ca.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3OTE3MDY2MjYsIm5iZiI6MTc5MTcwNjMyNiwicGF0aCI6Ii8xODMwMjYzMzMvNjcwNjgxNDQxLTQ4MGJmNGRlLWE3NGUtNDk0My04YTUxLTlhODc4NDdhMjNjYS5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjYxMDExJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI2MTAxMVQwODEyMDZaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1jNjg5NmE3OGY1NDk1MTRhY2UyYzNhNzRiNTIxMWU0MmJiM2IwYmRkZGE5YWRmMTYwZTUxNjdlZmEwMmViZTM0JlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LXR5cGU9aW1hZ2UlMkZwbmcifQ.bxuJhgmSyq80il5beQXL__-nABhU9DCKHloYzy9FfHc)
+![Wallet image 3.6.0](https://bytecoin.world/assets/images/wallets/wallet-3.6.0.png)
 
 <p align="center">
   <a href="https://github.com/bytecoinworld/bytecoin-gui/releases/tag/v3.6.0">
