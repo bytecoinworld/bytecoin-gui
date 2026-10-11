@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ConnectionOptionsFrame</class>
+ <widget class="QFrame" name="ConnectionOptionsFrame">
+  <property name="minimumSize">
+   <size><width>0</width><height>190</height></size>
+  </property>
+  <property name="windowTitle">
+   <string>Frame</string>
+  </property>
+  <property name="frameShape">
+   <enum>QFrame::NoFrame</enum>
+  </property>
+  <property name="frameShadow">
+   <enum>QFrame::Raised</enum>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_5">
+   <property name="spacing"><number>12</number></property>
+   <property name="leftMargin"><number>4</number></property>
+   <property name="topMargin"><number>6</number></property>
+   <property name="rightMargin"><number>4</number></property>
+   <property name="bottomMargin"><number>6</number></property>
+   <item>
+    <layout class="QHBoxLayout" name="walletdProfilesLayout">
+     <property name="spacing"><number>8</number></property>
+     <item>
+      <widget class="QLabel" name="walletdProfileLabel">
+       <property name="text"><string>Wallet daemon profile:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="m_walletdProfileCombo">
+       <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Fixed"><horstretch>1</horstretch><verstretch>0</verstretch></sizepolicy></property>
+       <item><property name="text"><string>Custom endpoint</string></property></item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_saveWalletdProfileButton">
+       <property name="text"><string>Save profile</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_deleteWalletdProfileButton">
+       <property name="text"><string>Delete</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <property name="spacing"><number>10</number></property>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Host:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="m_remoteHostEdit">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>127.0.0.1</string>
+       </property>
+       <property name="placeholderText"><string>localhost or node.example.org</string></property>
+       <property name="toolTip"><string>IP address or host name of the remote wallet daemon. Use a daemon you trust.</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Port:</string>
+       </property>
+      </widget>
+     </item>
+     <item alignment="Qt::AlignVCenter">
+      <widget class="QSpinBox" name="m_remotePortSpin">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>65535</number>
+       </property>
+       <property name="value">
+        <number>8070</number>
+       </property>
+       <property name="toolTip"><string>RPC port exposed by the wallet daemon (1–65535).</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="m_remoteHelperLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize"><size><width>0</width><height>48</height></size></property>
+     <property name="text">
+      <string>Connect to a wallet daemon on your computer or a remote server. The daemon operator may be able to observe your wallet's network requests. Confirm the host and port with a trusted provider.</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+     <property name="indent">
+      <number>0</number>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>m_remoteHostEdit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>ConnectionOptionsFrame</receiver>
+   <slot>remoteHostNameChanged(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>390</x>
+     <y>319</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>372</x>
+     <y>197</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>remoteHostNameChanged(QString)</slot>
+ </slots>
+</ui>
