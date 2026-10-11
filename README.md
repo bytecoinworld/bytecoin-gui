@@ -4,6 +4,8 @@ This community-maintained edition builds on the upstream Bytecoin Wallet and is
 released independently by the bytecoin.world community. The current stable
 release is **3.6.0**.
 
+![3.6.0](https://github.com/user-attachments/assets/480bf4de-a74e-4943-8a51-9a87847a23ca)
+
 ## How to build binaries from source code
 
 The CMake build fetches the pinned ZXing-C++ 1.4.0 source to provide local QR
