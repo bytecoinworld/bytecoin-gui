@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
+QT       += core gui network svg
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -12,10 +12,10 @@ TARGET = bytecoin-gui
 TEMPLATE = app
 
 !win32: QMAKE_CXXFLAGS += -std=c++14 -Wall -Wextra -pedantic
-macx: QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.11
+macx: QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.13
 macx: ICON = images/bytecoin.icns
 win32: RC_ICONS = images/bytecoin.ico
-win32: VERSION = 3.6.0.0
+win32: VERSION = 3.6.1.0
 
 #QMAKE_CXXFLAGS += -fno-omit-frame-pointer -fsanitize=address,undefined
 #LIBS += -lasan -lubsan

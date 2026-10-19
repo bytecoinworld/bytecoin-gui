@@ -1,0 +1,206 @@
+name: Build Linux and macOS
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: Linux x86_64
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out wallet GUI
+        uses: actions/checkout@v4
+        with:
+          path: bytecoin-gui
+
+      - name: Check out matching Bytecoin core
+        run: |
+          git init bytecoin
+          git -C bytecoin remote add origin https://github.com/bcndev/bytecoin.git
+          git -C bytecoin fetch --depth 1 origin c3d9b94e0d34ee486ff35e7c781f673c1097b955
+          git -C bytecoin checkout --detach FETCH_HEAD
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential cmake git libboost-all-dev libudev-dev \
+            qt5-qmake qtbase5-dev qttools5-dev-tools libqt5svg5-dev
+
+      - name: Check out OpenSSL 1.1.1w
+        run: git clone --depth 1 --branch OpenSSL_1_1_1w https://github.com/openssl/openssl.git openssl-src
+
+      - name: Build OpenSSL
+        working-directory: openssl-src
+        run: |
+          ./Configure linux-x86_64 no-shared no-tests --prefix="$GITHUB_WORKSPACE/openssl"
+          make -j2
+          make install_sw
+          ln -s "$GITHUB_WORKSPACE/openssl/lib/libssl.a" "$GITHUB_WORKSPACE/openssl/libssl.a"
+          ln -s "$GITHUB_WORKSPACE/openssl/lib/libcrypto.a" "$GITHUB_WORKSPACE/openssl/libcrypto.a"
+
+      - name: Build Bytecoin core and daemons
+        run: |
+          cmake -S bytecoin -B bytecoin/build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DUSE_SQLITE=ON
+          cmake --build bytecoin/build --parallel 2 --target bytecoin-crypto bytecoind walletd
+
+      - name: Check out ZXing-C++ 1.4.0
+        run: git clone --depth 1 --branch v1.4.0 https://github.com/zxing-cpp/zxing-cpp.git zxing-src
+
+      - name: Build ZXing-C++
+        run: |
+          cmake -S zxing-src -B zxing-build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/zxing-install" \
+            -DBUILD_WRITERS=ON \
+            -DBUILD_READERS=ON \
+            -DBUILD_EXAMPLES=OFF \
+            -DBUILD_BLACKBOX_TESTS=OFF \
+            -DBUILD_UNIT_TESTS=OFF \
+            -DBUILD_SHARED_LIBS=OFF
+          cmake --build zxing-build --parallel 2 --target install
+
+      - name: Build wallet GUI
+        env:
+          ZXING_ROOT: ${{ github.workspace }}/zxing-install
+        run: |
+          mkdir -p bytecoin-gui/build
+          cd bytecoin-gui/build
+          qmake ../src/bytecoin-gui.pro
+          make -j2
+
+      - name: Package Linux archive
+        working-directory: bytecoin-gui
+        run: |
+          version="$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+' src/version.h | head -n 1)"
+          mkdir -p dist
+          cat > dist/README-Linux.txt <<'EOF'
+          Bytecoin Wallet for Linux (x86_64)
+
+          Extract this archive and run ./bytecoin-gui from the extracted folder.
+          The GUI requires Qt 5 runtime libraries (Core, Gui, Network, Widgets,
+          and SVG), the X11/Wayland display libraries, and libudev.
+          On Ubuntu, install the runtime packages with:
+
+              sudo apt install libqt5core5t64 libqt5gui5t64 libqt5network5t64 libqt5widgets5t64 libqt5svg5 libudev1 libgl1
+
+          Keep bytecoin-gui, walletd, and bytecoind together in the same folder.
+          EOF
+          cp bin/bytecoin-gui bin/walletd bin/bytecoind dist/
+          tar -czf "$RUNNER_TEMP/bytecoin-wallet-${version}-linux-x86_64.tar.gz" -C dist .
+
+      - name: Upload Linux build
+        uses: actions/upload-artifact@v4
+        with:
+          name: bytecoin-wallet-linux-x86_64
+          path: ${{ runner.temp }}/bytecoin-wallet-*-linux-x86_64.tar.gz
+          if-no-files-found: error
+          retention-days: 30
+
+  macos:
+    name: macOS Intel
+    runs-on: macos-15-intel
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "10.13"
+    steps:
+      - name: Check out wallet GUI
+        uses: actions/checkout@v4
+        with:
+          path: bytecoin-gui
+
+      - name: Check out matching Bytecoin core
+        run: |
+          git init bytecoin
+          git -C bytecoin remote add origin https://github.com/bcndev/bytecoin.git
+          git -C bytecoin fetch --depth 1 origin c3d9b94e0d34ee486ff35e7c781f673c1097b955
+          git -C bytecoin checkout --detach FETCH_HEAD
+
+      - name: Install build dependencies
+        run: brew install boost
+
+      - name: Install Qt 5
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "5.15.2"
+          host: mac
+          target: desktop
+          arch: clang_64
+          modules: qtsvg
+
+      - name: Check out OpenSSL 1.1.1w
+        run: git clone --depth 1 --branch OpenSSL_1_1_1w https://github.com/openssl/openssl.git openssl-src
+
+      - name: Build OpenSSL
+        working-directory: openssl-src
+        run: |
+          ./Configure darwin64-x86_64-cc no-shared no-tests \
+            --prefix="$GITHUB_WORKSPACE/openssl" \
+            --openssldir="$GITHUB_WORKSPACE/openssl/ssl" \
+            -mmacosx-version-min="$MACOSX_DEPLOYMENT_TARGET"
+          make -j2
+          make install_sw
+          ln -s "$GITHUB_WORKSPACE/openssl/lib/libssl.a" "$GITHUB_WORKSPACE/openssl/libssl.a"
+          ln -s "$GITHUB_WORKSPACE/openssl/lib/libcrypto.a" "$GITHUB_WORKSPACE/openssl/libcrypto.a"
+
+      - name: Build Bytecoin core and daemons
+        run: |
+          sed -i '' 's/"10\.11"/"10.13"/' bytecoin/CMakeLists.txt
+          cmake -S bytecoin -B bytecoin/build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
+            -DUSE_SQLITE=ON
+          cmake --build bytecoin/build --parallel 2 --target bytecoin-crypto bytecoind walletd
+
+      - name: Check out ZXing-C++ 1.4.0
+        run: git clone --depth 1 --branch v1.4.0 https://github.com/zxing-cpp/zxing-cpp.git zxing-src
+
+      - name: Build ZXing-C++
+        run: |
+          cmake -S zxing-src -B zxing-build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
+            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/zxing-install" \
+            -DBUILD_WRITERS=ON \
+            -DBUILD_READERS=ON \
+            -DBUILD_EXAMPLES=OFF \
+            -DBUILD_BLACKBOX_TESTS=OFF \
+            -DBUILD_UNIT_TESTS=OFF \
+            -DBUILD_SHARED_LIBS=OFF
+          cmake --build zxing-build --parallel 2 --target install
+
+      - name: Build wallet GUI
+        env:
+          ZXING_ROOT: ${{ github.workspace }}/zxing-install
+        run: |
+          mkdir -p bytecoin-gui/build
+          cd bytecoin-gui/build
+          qmake ../src/bytecoin-gui.pro
+          make -j2
+
+      - name: Bundle Qt frameworks
+        run: |
+          qt_bins="$(qmake -query QT_INSTALL_BINS)"
+          "$qt_bins/macdeployqt" bytecoin-gui/bin/bytecoin-gui.app -always-overwrite
+
+      - name: Package macOS app
+        run: |
+          version="$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+' bytecoin-gui/src/version.h | head -n 1)"
+          ditto -c -k --sequesterRsrc --keepParent \
+            bytecoin-gui/bin/bytecoin-gui.app \
+            "$RUNNER_TEMP/bytecoin-wallet-${version}-macos-x86_64.zip"
+
+      - name: Upload macOS build
+        uses: actions/upload-artifact@v4
+        with:
+          name: bytecoin-wallet-macos-x86_64
+          path: ${{ runner.temp }}/bytecoin-wallet-*-macos-x86_64.zip
+          if-no-files-found: error
+          retention-days: 30

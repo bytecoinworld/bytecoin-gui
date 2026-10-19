@@ -1,80 +1,91 @@
-# Bytecoin Wallet — bytecoin.world Community Edition
+# Bytecoin Wallet
 
-This community-maintained edition builds on the upstream Bytecoin Wallet and is
-released independently by the bytecoin.world community. The current stable
-release is **3.6.0**.
+**bytecoin.world Community Edition · Version 3.6.1**
 
-![Wallet image 3.6.0](https://bytecoin.world/assets/images/wallets/wallet-3.6.0.png)
+A desktop wallet for Bytecoin, maintained by the bytecoin.world community.
 
-<p align="center">
-  <a href="https://github.com/bytecoinworld/bytecoin-gui/releases/tag/v3.6.0">
-    <font size="22">Download Bytecoin Wallet</font>
-  </a>
-</p>
+[Browse releases](https://github.com/bytecoinworld/bytecoin-gui/releases)
+· [Visit bytecoin.world](https://bytecoin.world/)
+· [Open the Bytecoin Explorer](https://explorer.bytecoin.world/)
 
-## How to build binaries from source code
+## Features
 
-The CMake build fetches the pinned ZXing-C++ 1.4.0 source to provide local QR
-code reading and writing. It requires CMake 3.14 or newer and a C++17 compiler.
-The qmake project uses the same library as a prebuilt static dependency: build
-and install ZXing-C++ 1.4.0 with reader and writer support enabled, then set
-`ZXING_ROOT` to its installation prefix before opening/building the qmake
-project. The installation must provide `include/ZXing/ReadBarcode.h` and
-`lib/ZXing` (or the platform equivalent). ZXing-C++ is licensed under
-Apache-2.0.
+- Create, open, and restore wallets; view balances and transaction history.
+- Receive using a wallet address and QR code. Read payment URIs and QR-code
+  images when preparing a payment.
+- Review payment recipients, amounts, fees, and privacy settings before
+  sending.
+- Search and filter activity, inspect transaction details, and export history.
+- Create and verify transaction send proofs.
+- Configure wallet-daemon connections and saved connection profiles.
+- Choose **Tools → Light mode** to switch between light and dark appearances.
+  The selected appearance is saved and restored on the next launch.
+- Pool mining is not included in this wallet.
 
-### Windows
-To build the gui you must have built bytecoin core, so please do all steps from [here](https://github.com/bcndev/bytecoin#building-on-windows) before proceed. Install [QtCreator](https://www.qt.io/download-thank-you?os=windows), open the project file bytecoin-gui/src/bytecoin-gui.pro in QtCreator and build it using MSVS kit (you must have MSVS installed already to build bytecoin core).
+## Windows downloads
 
-For qmake builds, configure the ZXing-C++ 1.4.0 static library with the same
-Visual Studio compiler and architecture used by the Qt kit, install it, and set
-`ZXING_ROOT` to that installation directory.
+Download the **3.6.1 Windows installer** or the portable package from the
+[releases page][releases]. Run the MSI and follow its prompts. To use the
+portable version, extract the entire ZIP to a folder and run `bytecoin-gui.exe`
+from there. Keep the extracted files together; the GUI needs its companion
+programs and libraries.
 
-For example, configure the ZXing-C++ v1.4.0 checkout with
-`-DBUILD_WRITERS=ON -DBUILD_READERS=ON -DBUILD_EXAMPLES=OFF`, set
-`CMAKE_INSTALL_PREFIX` to a directory you can write, build its `install`
-target, and point `ZXING_ROOT` at that directory.
+Before running a download, compare its SHA-256 hash with the matching entry in
+the release's `SHA256SUMS.txt`. Only use an installer when it is explicitly
+listed for the same release version.
 
-### MacOS
+The MSI is not code-signed, so Windows may display an unknown-publisher
+warning. Verify its checksum against the official release before opening it.
 
-To build the gui you must have built bytecoin core, so please do all steps from [here](https://github.com/bcndev/bytecoin#building-on-mac-osx) before proceed. Install [QtCreator](https://www.qt.io/download-thank-you?os=macos), open the project file bytecoin-gui/src/bytecoin-gui.pro in QtCreator and build it using clang kit (you must have XCode installed already to build bytecoin core).
+Linux and macOS packages are produced by the **Build Linux and macOS** GitHub
+Actions workflow on manual runs and version-tag pushes. Download those packages
+from the workflow run's artifacts; they are not automatically attached to the
+GitHub release.
 
-For qmake builds, install a static ZXing-C++ 1.4.0 build for the same
-architecture and set `ZXING_ROOT` to its installation prefix.
+## Build from source
 
-### Linux
+### Requirements
+
+- CMake 3.14 or newer, a C++14-capable compiler, and Qt 5 development
+  components (Core, Gui, Network, Widgets, and SVG).
+- A compatible Bytecoin core checkout built alongside this repository at
+  `../bytecoin`. The build expects its headers and `bytecoin-crypto` library
+  in the standard locations referenced by `CMakeLists.txt`.
+- Internet access during initial CMake configuration to fetch the pinned
+  ZXing-C++ 1.4.0 dependency. QR processing is performed locally; wallet data
+  and QR contents are not sent to a QR service.
+
+### CMake
+
+From the repository root, configure and build:
+
+```sh
+cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/qt
+cmake --build build --config Release --parallel
 ```
-# To install all required packages on Ubuntu use the following command:
-$ sudo apt install qt5-qmake qtbase5-dev qtbase5-dev-tools cmake
 
-$ git clone https://github.com/bcndev/bytecoin.git
-$ cd bytecoin
-$ mkdir -p build
-$ cd build
-$ cmake ..
-$ make -j4 bytecoin-crypto
-$ cd ../..
-$ git clone https://github.com/bytecoinworld/bytecoin-gui.git
-$ cd bytecoin-gui
-$ mkdir -p build
-$ cd build
-$ cmake .. -DCMAKE_PREFIX_PATH=/path/to/qt
-$ make -j4
-```
-The CMake configuration downloads/builds ZXing-C++ 1.4.0 locally; no payment
-address, QR contents, or wallet data is sent to a QR service.
-Alternative way:
-```
-# Install QtCreator:
-$ sudo apt install qtcreator
+The GUI executable is written to the repository's `bin` directory. On Windows,
+use a Qt build and compiler architecture that match.
 
-$ git clone https://github.com/bcndev/bytecoin.git
-$ cd bytecoin
-$ mkdir -p build
-$ cd build
-$ cmake ..
-$ make -j4 bytecoin-crypto
-$ cd ../..
-$ git clone https://github.com/bytecoinworld/bytecoin-gui.git
-```
-Now open the project file bytecoin-gui/src/bytecoin-gui.pro in QtCreator and build it.
+### Qt Creator / qmake
+
+Open `src/bytecoin-gui.pro` in Qt Creator and select a kit compatible with the
+Bytecoin core build. The qmake project requires a prebuilt static ZXing-C++
+1.4.0 installation with reader and writer support. Set `ZXING_ROOT` to that
+installation's prefix before building; its headers and library must be
+available for the selected kit.
+
+## Safety
+
+Always verify the recipient address and amount on the final confirmation
+screen. Keep wallet files, passwords, recovery words, and private keys secret,
+and maintain a secure backup. Never share recovery information with anyone.
+
+## License
+
+This project is distributed under the GNU Lesser General Public License,
+version 3 or (at your option) any later version. See [`LICENSE`](LICENSE) for
+the complete license text. ZXing-C++ is a separate dependency distributed
+under Apache License 2.0.
+
+[releases]: https://github.com/bytecoinworld/bytecoin-gui/releases

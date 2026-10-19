@@ -5,7 +5,7 @@
 
 namespace WalletGUI {
 
-constexpr char VERSION[] = "3.6.0";
+constexpr char VERSION[] = "3.6.1";
 constexpr char CODENAME[] = "Beryl";
 constexpr char VERSION_SUFFIX[] = "stable";
 constexpr char REVISION[] = "20190718";

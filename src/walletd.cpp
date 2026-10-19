@@ -622,6 +622,27 @@ void BuiltinWalletd::run(const QStringList& args)
 #endif
 
     QStringList savedArgs = parseWalletdParams(Settings::instance().getWalletdParams());
+    bool hasCustomP2pBindAddress = false;
+    for (const QString& arg : savedArgs)
+    {
+        if (arg == QStringLiteral("--p2p-bind-address")
+                || arg.startsWith(QStringLiteral("--p2p-bind-address=")))
+        {
+            hasCustomP2pBindAddress = true;
+            break;
+        }
+    }
+    if (!hasCustomP2pBindAddress)
+    {
+        quint16 p2pPort = 8081;
+        switch (Settings::instance().getNetworkType())
+        {
+        case NetworkType::TEST: p2pPort += 1000; break;
+        case NetworkType::STAGE: p2pPort += 2000; break;
+        case NetworkType::MAIN: break;
+        }
+        savedArgs << QString{"--p2p-bind-address=0.0.0.0:%1"}.arg(p2pPort);
+    }
     walletd_->setArguments(savedArgs + args);
     walletd_->start();
 

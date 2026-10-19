@@ -2,6 +2,11 @@
 
 ### Unreleased
 
+### v3.6.1 (bytecoin.world Community Edition)
+- Added a saved Light mode setting to switch between light and dark appearances.
+- Updated the built-in wallet node's default P2P listener port to 8081 on mainnet (9081 on testnet and 10081 on stagenet).
+- Clarified that send-password verification requires a local wallet-daemon connection.
+
 ### v3.6.0 (bytecoin.world Community Edition)
 - Removed built-in pool mining from the desktop wallet.
 - Replaced the optional light/dark switch with a unified dark interface, including refreshed menus, navigation, forms, and activity views.

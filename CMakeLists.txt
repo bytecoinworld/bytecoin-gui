@@ -2,13 +2,14 @@
 # for ex.: export CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH:/Users/testnet/Qt/5.9.2/clang_64/lib/cmake"
 
 cmake_minimum_required(VERSION 3.14)
-project(bytecoin-gui)
+project(bytecoin-gui VERSION 3.6.1)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Svg REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -19,7 +20,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(APPLE)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.11")
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.13")
 endif()
 
 set(SOURCES
@@ -101,4 +102,4 @@ else()
     add_executable(bytecoin-gui ${SOURCES} src/resources.qrc)
 endif()
 target_link_libraries(bytecoin-gui bytecoin-crypto ZXing::ZXing)
-qt5_use_modules(bytecoin-gui Core Network Gui Widgets)
+qt5_use_modules(bytecoin-gui Core Network Gui Widgets Svg)

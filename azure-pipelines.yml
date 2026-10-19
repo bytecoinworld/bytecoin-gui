@@ -236,6 +236,7 @@ jobs:
         generatorName: Visual Studio 15 2017 Win64
         qtBinArch: _64
         installerArch: x64
+        vcRedistArch: x64
         arch: 64
       win32:
         opensslDir: openssl32
@@ -243,6 +244,7 @@ jobs:
         generatorName: Visual Studio 15 2017
         qtBinArch:
         installerArch: x86
+        vcRedistArch: x86
         arch: 32
   steps:
   - checkout: none
@@ -329,13 +331,13 @@ jobs:
 
   - bash: |
       VCRedistVersion=`cat "$VCINSTALLDIR\Auxiliary\Build\Microsoft.VCRedistVersion.default.txt"`
-      VCMergeModulesDir="$VCINSTALLDIR\Redist\MSVC\\$VCRedistVersion\MergeModules"
+      VCRedistDir="$VCINSTALLDIR\Redist\MSVC\\$VCRedistVersion\\$(vcRedistArch)\Microsoft.VC141.CRT"
       cd bytecoin-gui/Windows\ Installer
       "$(wixInstallPath)"/candle.exe -arch $(installerArch) \
         -dVersion=$(Build.SourceBranchName) \
         -dProductVersion=`date +%y.%m.%d` \
         -dDate=`date +%Y/%m/%d` \
-        -dVC_MERGE_MODULES_PATH="$VCMergeModulesDir\Microsoft_VC141_CRT_$(installerArch).msm" \
+        -dVC_REDIST_DIR="$VCRedistDir" \
         Installer.wxs
       "$(wixInstallPath)"/light.exe -sw1076 -ext WixUIExtension -spdb -out "$(Build.ArtifactStagingDirectory)"/bytecoin-desktop-$(Build.SourceBranchName)-win$(arch).msi Installer.wixobj
     displayName: Build Wix installer

@@ -70,7 +70,7 @@ const char LOGO_LABEL_STAGE_ICON_PATH[] = ":icons/logo_stage";
 const char LOGO_LABEL_TEST_ICON_PATH[] = ":icons/logo_test";
 
 #ifdef Q_OS_WIN
-void applyWindowsDarkTitleBar(QWidget* window)
+void applyWindowsDarkTitleBar(QWidget* window, bool darkMode)
 {
     using DwmSetWindowAttributeFn = HRESULT(WINAPI*)(HWND, DWORD, LPCVOID, DWORD);
     HMODULE dwmApi = LoadLibraryW(L"dwmapi.dll");
@@ -81,7 +81,7 @@ void applyWindowsDarkTitleBar(QWidget* window)
             GetProcAddress(dwmApi, "DwmSetWindowAttribute"));
     if (setWindowAttribute != nullptr)
     {
-        const BOOL useDarkMode = TRUE;
+        const BOOL useDarkMode = darkMode ? TRUE : FALSE;
         const HWND handle = reinterpret_cast<HWND>(window->winId());
         if (FAILED(setWindowAttribute(handle, 20, &useDarkMode, sizeof(useDarkMode))))
             setWindowAttribute(handle, 19, &useDarkMode, sizeof(useDarkMode));
@@ -91,7 +91,7 @@ void applyWindowsDarkTitleBar(QWidget* window)
 }
 #endif
 
-QIcon navigationIcon(const QString& name)
+QIcon navigationIcon(const QString& name, bool dayMode)
 {
     const auto drawIcon = [&name](const QColor& color)
     {
@@ -152,10 +152,10 @@ QIcon navigationIcon(const QString& name)
     };
 
     QIcon icon;
-    icon.addPixmap(drawIcon(QColor("#A7A2B0")), QIcon::Normal, QIcon::Off);
-    icon.addPixmap(drawIcon(QColor("#FF6AA8")), QIcon::Normal, QIcon::On);
-    icon.addPixmap(drawIcon(QColor("#686572")), QIcon::Disabled, QIcon::Off);
-    icon.addPixmap(drawIcon(QColor("#686572")), QIcon::Disabled, QIcon::On);
+    icon.addPixmap(drawIcon(dayMode ? QColor("#655D69") : QColor("#A7A2B0")), QIcon::Normal, QIcon::Off);
+    icon.addPixmap(drawIcon(dayMode ? QColor("#A9275B") : QColor("#FF6AA8")), QIcon::Normal, QIcon::On);
+    icon.addPixmap(drawIcon(dayMode ? QColor("#AAA4AE") : QColor("#686572")), QIcon::Disabled, QIcon::Off);
+    icon.addPixmap(drawIcon(dayMode ? QColor("#AAA4AE") : QColor("#686572")), QIcon::Disabled, QIcon::On);
     return icon;
 }
 
@@ -181,15 +181,12 @@ MainWindow::MainWindow(
 {
     m_ui->setupUi(this);
 
-#ifdef Q_OS_WIN
-    applyWindowsDarkTitleBar(this);
-#endif
-
-    m_ui->m_overviewButton->setIcon(navigationIcon(QStringLiteral("overview")));
-    m_ui->m_myAddressesButton->setIcon(navigationIcon(QStringLiteral("addresses")));
-    m_ui->m_sendButton->setIcon(navigationIcon(QStringLiteral("send")));
-    m_ui->m_addressBookButton->setIcon(navigationIcon(QStringLiteral("contacts")));
-    m_ui->m_logButton->setIcon(navigationIcon(QStringLiteral("console")));
+    const bool dayMode = Settings::instance().isDayMode();
+    m_ui->m_overviewButton->setIcon(navigationIcon(QStringLiteral("overview"), dayMode));
+    m_ui->m_myAddressesButton->setIcon(navigationIcon(QStringLiteral("addresses"), dayMode));
+    m_ui->m_sendButton->setIcon(navigationIcon(QStringLiteral("send"), dayMode));
+    m_ui->m_addressBookButton->setIcon(navigationIcon(QStringLiteral("contacts"), dayMode));
+    m_ui->m_logButton->setIcon(navigationIcon(QStringLiteral("console"), dayMode));
     const QSize navigationIconSize(20, 20);
     m_ui->m_overviewButton->setIconSize(navigationIconSize);
     m_ui->m_myAddressesButton->setIconSize(navigationIconSize);
@@ -258,6 +255,10 @@ MainWindow::MainWindow(
 //    m_ui->m_balanceLabel->setFont(font);
 
     connect(m_ui->m_exitAction, &QAction::triggered, qApp, &QApplication::quit);
+    connect(m_ui->m_dayModeAction, &QAction::toggled, this, [this](bool enabled) {
+        Settings::instance().setDayMode(enabled);
+        themeChanged();
+    });
     connect(m_ui->m_bytecoinWorldSiteAction, &QAction::triggered, this, [] {
         QDesktopServices::openUrl(QUrl(QStringLiteral("https://bytecoin.world/")));
     });
@@ -303,11 +304,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::netChanged(const QString& net)
 {
+    currentNet_ = net;
     if (net == RpcApi::MAIN_NET_NAME)
     {
         netColor_ = MAIN_NET_COLOR;
         setWindowIcon(QIcon(WINDOW_MAIN_ICON_PATH));
-        m_ui->m_logoLabel->setPixmap(QPixmap(QString(LOGO_LABEL_MAIN_ICON_PATH)));
 //        m_ui->m_createNewWalletAction->setEnabled(false);
 //        m_ui->m_restoreWalletFromMnemonicAction->setEnabled(false);
     }
@@ -315,7 +316,6 @@ void MainWindow::netChanged(const QString& net)
     {
         netColor_ = STAGE_NET_COLOR;
         setWindowIcon(QIcon(WINDOW_STAGE_ICON_PATH));
-        m_ui->m_logoLabel->setPixmap(QPixmap(QString(LOGO_LABEL_STAGE_ICON_PATH)));
 //        m_ui->m_createNewWalletAction->setEnabled(true);
 //        m_ui->m_restoreWalletFromMnemonicAction->setEnabled(true);
     }
@@ -323,16 +323,23 @@ void MainWindow::netChanged(const QString& net)
     {
         netColor_ = TEST_NET_COLOR;
         setWindowIcon(QIcon(WINDOW_TEST_ICON_PATH));
-        m_ui->m_logoLabel->setPixmap(QPixmap(QString(LOGO_LABEL_TEST_ICON_PATH)));
 //        m_ui->m_createNewWalletAction->setEnabled(true);
 //        m_ui->m_restoreWalletFromMnemonicAction->setEnabled(true);
     }
+    if (net == RpcApi::MAIN_NET_NAME)
+        m_ui->m_logoLabel->setPixmap(QPixmap(Settings::instance().isDayMode()
+            ? QStringLiteral(":icons/light/logo") : QString(LOGO_LABEL_MAIN_ICON_PATH)));
+    else if (net == RpcApi::STAGE_NET_NAME)
+        m_ui->m_logoLabel->setPixmap(QPixmap(QString(LOGO_LABEL_STAGE_ICON_PATH)));
+    else if (net == RpcApi::TEST_NET_NAME)
+        m_ui->m_logoLabel->setPixmap(QPixmap(QString(LOGO_LABEL_TEST_ICON_PATH)));
     m_ui->m_syncProgress->setColor(netColor_);
 }
 
 void MainWindow::themeChanged()
 {
-    const QMap<QString, QString> colors{
+    const bool dayMode = Settings::instance().isDayMode();
+    const QMap<QString, QString> darkColors{
         {"%addressFontColor%", "#E8D9E1"},
         {"%backgroundColorBlueHover%", "#C43D76"},
         {"%backgroundColorBlueNormal%", "#A9275B"},
@@ -363,24 +370,56 @@ void MainWindow::themeChanged()
         {"%warningSurfaceColor%", "#30251B"}
     };
 
+    const QMap<QString, QString> dayColors{
+        {"%addressFontColor%", "#514653"},
+        {"%backgroundColorBlueHover%", "#B23466"},
+        {"%backgroundColorBlueNormal%", "#922852"},
+        {"%backgroundColorBluePressed%", "#741F43"},
+        {"%backgroundColorGray%", "#F5F3F7"},
+        {"%balanceFontColor%", "#211D26"},
+        {"%borderColor%", "#DFDBE3"},
+        {"%borderColorDark%", "#C9C3CE"},
+        {"%fontColorBlueHover%", "#922852"},
+        {"%fontColorGray%", "#5B5661"},
+        {"%surfaceColor%", "#FFFFFF"},
+        {"%elevatedSurfaceColor%", "#FFFFFF"},
+        {"%surfaceHoverColor%", "#F0EDF3"},
+        {"%textColor%", "#211D26"},
+        {"%mutedTextColor%", "#5E5965"},
+        {"%disabledTextColor%", "#88838D"},
+        {"%headerBackgroundColor%", "#FFFFFF"},
+        {"%headerBorderColor%", "#DFDBE3"},
+        {"%selectionColor%", "#922852"},
+        {"%statusBarBackgroundColor%", "#F0EDF3"},
+        {"%toolBarBorderColor%", "#DFDBE3"},
+        {"%toolButtonBackgroundColorHover%", "#F0EDF3"},
+        {"%toolButtonBackgroundColorNormal%", "#F8F6F9"},
+        {"%toolButtonBackgroundColorPressed%", "#F4E5EC"},
+        {"%toolButtonFontColorDisabled%", "#88838D"},
+        {"%toolButtonFontColorNormal%", "#514C57"},
+        {"%scrollTrackColor%", "#F0EDF3"},
+        {"%warningSurfaceColor%", "#FFF4E5"}
+    };
+    const QMap<QString, QString>& colors = dayMode ? dayColors : darkColors;
+
     QPalette palette;
-    palette.setColor(QPalette::Window, QColor("#0B0C12"));
-    palette.setColor(QPalette::WindowText, QColor("#F5F3F7"));
-    palette.setColor(QPalette::Base, QColor("#12121A"));
-    palette.setColor(QPalette::AlternateBase, QColor("#191923"));
-    palette.setColor(QPalette::ToolTipBase, QColor("#191923"));
-    palette.setColor(QPalette::ToolTipText, QColor("#F5F3F7"));
-    palette.setColor(QPalette::Text, QColor("#F5F3F7"));
-    palette.setColor(QPalette::Button, QColor("#191923"));
-    palette.setColor(QPalette::ButtonText, QColor("#F5F3F7"));
+    palette.setColor(QPalette::Window, QColor(colors.value("%backgroundColorGray%")));
+    palette.setColor(QPalette::WindowText, QColor(colors.value("%textColor%")));
+    palette.setColor(QPalette::Base, QColor(colors.value("%surfaceColor%")));
+    palette.setColor(QPalette::AlternateBase, QColor(colors.value("%elevatedSurfaceColor%")));
+    palette.setColor(QPalette::ToolTipBase, QColor(colors.value("%elevatedSurfaceColor%")));
+    palette.setColor(QPalette::ToolTipText, QColor(colors.value("%textColor%")));
+    palette.setColor(QPalette::Text, QColor(colors.value("%textColor%")));
+    palette.setColor(QPalette::Button, QColor(colors.value("%elevatedSurfaceColor%")));
+    palette.setColor(QPalette::ButtonText, QColor(colors.value("%textColor%")));
     palette.setColor(QPalette::BrightText, QColor("#FFFFFF"));
-    palette.setColor(QPalette::Highlight, QColor("#873051"));
+    palette.setColor(QPalette::Highlight, QColor(colors.value("%selectionColor%")));
     palette.setColor(QPalette::HighlightedText, QColor("#FFFFFF"));
-    palette.setColor(QPalette::Link, QColor("#F08DB5"));
-    palette.setColor(QPalette::LinkVisited, QColor("#D783A7"));
-    palette.setColor(QPalette::Disabled, QPalette::WindowText, QColor("#77727F"));
-    palette.setColor(QPalette::Disabled, QPalette::Text, QColor("#77727F"));
-    palette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor("#77727F"));
+    palette.setColor(QPalette::Link, QColor(colors.value("%fontColorBlueHover%")));
+    palette.setColor(QPalette::LinkVisited, QColor(colors.value("%fontColorBlueHover%")));
+    palette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(colors.value("%disabledTextColor%")));
+    palette.setColor(QPalette::Disabled, QPalette::Text, QColor(colors.value("%disabledTextColor%")));
+    palette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(colors.value("%disabledTextColor%")));
     qApp->setPalette(palette);
 
     QString styleSheet = m_styleSheetTemplate;
@@ -394,11 +433,28 @@ void MainWindow::themeChanged()
     styleSheet.replace("%fontSizeLarge%", "13pt");
     styleSheet.replace("%fontSizeHuge%", "21pt");
     styleSheet.replace("%fontSizeDisplay%", "25pt");
-    styleSheet.replace("%currentTheme%", "dark");
+    styleSheet.replace("%currentTheme%", dayMode ? "light" : "dark");
     qApp->setStyleSheet(styleSheet);
 
+    m_ui->m_dayModeAction->setChecked(dayMode);
+    m_ui->m_overviewButton->setIcon(navigationIcon(QStringLiteral("overview"), dayMode));
+    m_ui->m_myAddressesButton->setIcon(navigationIcon(QStringLiteral("addresses"), dayMode));
+    m_ui->m_sendButton->setIcon(navigationIcon(QStringLiteral("send"), dayMode));
+    m_ui->m_addressBookButton->setIcon(navigationIcon(QStringLiteral("contacts"), dayMode));
+    m_ui->m_logButton->setIcon(navigationIcon(QStringLiteral("console"), dayMode));
+    if (currentNet_.isEmpty() || currentNet_ == RpcApi::MAIN_NET_NAME)
+        m_ui->m_logoLabel->setPixmap(QPixmap(dayMode
+            ? QStringLiteral(":icons/light/logo")
+            : QString(LOGO_LABEL_MAIN_ICON_PATH)));
+
+#ifdef Q_OS_WIN
+    applyWindowsDarkTitleBar(this, !dayMode);
+#endif
+
     m_ui->m_syncProgress->setColor(netColor_);
-    m_syncMovie->setFileName(":icons/dark/wallet-sync");
+    m_syncMovie->setFileName(dayMode
+        ? QStringLiteral(":icons/light/wallet-sync")
+        : QStringLiteral(":icons/dark/wallet-sync"));
     m_syncMovie->setScaledSize(QSize(16, 16));
     m_syncMovie->stop();
     m_ui->m_toolFrame->setProperty("compact", width() < 960);

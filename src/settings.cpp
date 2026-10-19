@@ -31,6 +31,7 @@ constexpr char OPTION_BYTECOIND_HOST[] = "bytecoindHost";
 constexpr char OPTION_BYTECOIND_PORT[] = "bytecoindPort";
 constexpr char OPTION_PUBLIC_BYTECOIND_NODES[] = "publicBytecoindNodes";
 constexpr char OPTION_NETWORK_TYPE[] = "networkType";
+constexpr char OPTION_DAY_MODE[] = "dayMode";
 constexpr char OPTION_RECENT_WALLETS[] = "recentWallets";
 constexpr char OPTION_WALLETD_PARAMS[] = "walletdParams";
 
@@ -202,6 +203,11 @@ NetworkType Settings::getNetworkType() const
     return getEnumValue<NetworkType>(OPTION_NETWORK_TYPE, getDefaultNetworkType());
 }
 
+bool Settings::isDayMode() const
+{
+    return settings_->value(OPTION_DAY_MODE, false).toBool();
+}
+
 QString Settings::getNetworkTypeString() const
 {
     switch(getNetworkType())
@@ -311,6 +317,11 @@ void Settings::setBytecoindConnectionMethod(ConnectionMethod method)
 void Settings::setNetworkType(NetworkType type)
 {
     settings_->setValue(OPTION_NETWORK_TYPE, static_cast<int>(type));
+}
+
+void Settings::setDayMode(bool enabled)
+{
+    settings_->setValue(OPTION_DAY_MODE, enabled);
 }
 
 void Settings::setWalletFile(const QString& walletFile)

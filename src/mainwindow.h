@@ -103,6 +103,7 @@ private:
     WalletModel* walletModel_;
 
     QColor netColor_;
+    QString currentNet_;
     QString pendingSendTransaction_;
 
     void createRecentWalletMenu();

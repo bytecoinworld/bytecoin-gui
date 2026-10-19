@@ -895,6 +895,8 @@
     <addaction name="m_checkProofAction"/>
     <addaction name="m_openDataFolderAction"/>
     <addaction name="m_paramsAction"/>
+    <addaction name="separator"/>
+    <addaction name="m_dayModeAction"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
@@ -997,6 +999,17 @@
   <action name="m_paramsAction">
    <property name="text">
     <string>Wallet daemon &amp;parameters</string>
+   </property>
+  </action>
+  <action name="m_dayModeAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Light mode</string>
+   </property>
+   <property name="toolTip">
+    <string>Use the light appearance. Uncheck to use the dark appearance.</string>
    </property>
   </action>
   <action name="m_exportViewOnlyKeysAction">

@@ -64,6 +64,7 @@ public:
     QString getWalletFile() const;
     QString getNetworkTypeString() const;
     NetworkType getNetworkType() const;
+    bool isDayMode() const;
 
     QStringList getRecentWallets() const;
 
@@ -81,6 +82,7 @@ public:
     void setBytecoindConnectionMethod(ConnectionMethod method);
     void setBytecoindEndPoint(const QString& host, quint16 port);
     void setNetworkType(NetworkType type);
+    void setDayMode(bool enabled);
 
     void setWalletFile(const QString& walletFile);
 
