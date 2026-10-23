@@ -47,7 +47,7 @@ jobs:
 
       - name: Build Bytecoin core and daemons
         run: |
-          sed -i 's/^#include <cstddef>/#include <stdexcept>\n#include <cstddef>/' bytecoin/src/crypto/crypto.hpp
+          python3 -c 'from pathlib import Path; p = Path("bytecoin/src/crypto/crypto.hpp"); s = p.read_text(); p.write_text(s.replace("#include <cstddef>", "#include <stdexcept>\n#include <cstddef>", 1))'
           cmake -S bytecoin -B bytecoin/build \
             -DCMAKE_BUILD_TYPE=Release \
             -DUSE_SQLITE=ON
@@ -154,8 +154,7 @@ jobs:
       - name: Build Bytecoin core and daemons
         run: |
           sed -i '' 's/"10\.11"/"10.13"/' bytecoin/CMakeLists.txt
-          sed -i '' 's/^#include <cstddef>/#include <stdexcept>\
-#include <cstddef>/' bytecoin/src/crypto/crypto.hpp
+          python3 -c 'from pathlib import Path; p = Path("bytecoin/src/crypto/crypto.hpp"); s = p.read_text(); p.write_text(s.replace("#include <cstddef>", "#include <stdexcept>\n#include <cstddef>", 1))'
           cmake -S bytecoin -B bytecoin/build \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
